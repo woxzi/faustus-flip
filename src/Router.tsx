@@ -1,12 +1,19 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { HomePage } from './pages/Home.page';
 
-const router = createBrowserRouter([
+console.log(import.meta.env.VITE_BASE_PATH);
+
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <HomePage />,
+    },
+  ],
   {
-    path: '/faustus-flip',
-    element: <HomePage />,
-  },
-]);
+    basename: import.meta.env.VITE_BASE_PATH,
+  }
+);
 
 export function Router() {
   return <RouterProvider router={router} />;
