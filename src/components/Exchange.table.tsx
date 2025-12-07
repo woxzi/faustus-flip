@@ -1,15 +1,7 @@
 import { useMemo, useState } from 'react';
 import { IconInfoCircle, IconSearch } from '@tabler/icons-react';
 import cx from 'clsx';
-import {
-  Center,
-  Flex,
-  ScrollArea,
-  Table,
-  TextInput,
-  Tooltip,
-  useMantineTheme,
-} from '@mantine/core';
+import { Center, ScrollArea, Table, TextInput, Tooltip, useMantineTheme } from '@mantine/core';
 import { sortData, toFixedIfNecessary, toTitleCase } from '@/helpers';
 import { TableHeader } from './TableBase';
 import classes from './Exchange.table.module.css';

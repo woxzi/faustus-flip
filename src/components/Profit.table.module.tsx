@@ -3,7 +3,6 @@ import { IconInfoCircle, IconSearch } from '@tabler/icons-react';
 import cx from 'clsx';
 import { Center, ScrollArea, Table, TextInput, Tooltip, useMantineTheme } from '@mantine/core';
 import { sortData, toFixedIfNecessary, toTitleCase } from '@/helpers';
-import { primaryCurrency } from '@/services/poewatch.service';
 import { TableHeader } from './TableBase';
 import classes from './Profit.table.module.css';
 

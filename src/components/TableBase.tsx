@@ -1,33 +1,5 @@
-import { useMemo, useState } from 'react';
-import {
-  IconChevronDown,
-  IconChevronUp,
-  IconInfoCircle,
-  IconMoneybag,
-  IconRefresh,
-  IconSearch,
-  IconSelector,
-  IconTrendingUp,
-} from '@tabler/icons-react';
-import cx from 'clsx';
-import {
-  ActionIcon,
-  Button,
-  Card,
-  Center,
-  Flex,
-  Group,
-  keys,
-  MantineStyleProp,
-  ScrollArea,
-  Table,
-  Tabs,
-  Text,
-  TextInput,
-  Tooltip,
-  UnstyledButton,
-  useMantineTheme,
-} from '@mantine/core';
+import { IconChevronDown, IconChevronUp, IconSelector } from '@tabler/icons-react';
+import { Center, Group, Table, Text, UnstyledButton } from '@mantine/core';
 import classes from './TableBase.module.css';
 
 interface ThProps {
