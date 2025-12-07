@@ -6,7 +6,7 @@ import { theme } from './theme';
 
 export default function App() {
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={theme} defaultColorScheme="auto">
       <AppShell>
         <AppShell.Main>
           <Center style={{ height: '100dvh' }}>
