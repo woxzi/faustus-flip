@@ -24,7 +24,6 @@ export function ExchangeTable({ tableData, ignoreLowConfidence }: ExchangeTableP
     payload: { sortBy?: keyof CurrencyPair | null; reversed: boolean; search: string },
     ignoreLowConfidence: boolean
   ) {
-    console.log('called calc');
     const dataToSort = ignoreLowConfidence ? data.filter((x) => !x.low_confidence) : data;
     return sortData(dataToSort, payload);
   }

@@ -4,7 +4,7 @@ export const primaryCurrency = ['chaos', 'divine'];
 
 export const LOW_CONFIDENCE_VALUE_THRESHOLD = 10000; // in chaos (or primaryCurrency[0])
 export const LOW_CONFIDENCE_QUANTITY_THRESHOLD = 1000; // in secondary currency units
-export const LOW_CONFIDENCE_RATIO_THRESHOLD = 0.5; // in percent, ex: '0.5' = 50% threshold
+export const LOW_CONFIDENCE_RATIO_THRESHOLD = 0.3; // in percent, ex: '0.5' = 50% threshold
 
 export function getCurrencyPairsAndTrios(league: string) {
   return fetch(`https://api.poe.watch/currencyRatios?league=${league}&game=poe1`)
@@ -161,12 +161,11 @@ function isPairLowConfidence(pair: CurrencyPair): boolean {
 }
 
 function isTrioLowConfidence(chaosPair: CurrencyPair, divPair: CurrencyPair): boolean {
-  const numerator = Math.min(chaosPair.primary_currency_value, divPair.primary_currency_value);
-  const denominator = Math.max(chaosPair.primary_currency_value, divPair.primary_currency_value);
-
+  const numerator = Math.min(chaosPair.quantity_traded, divPair.quantity_traded);
+  const denominator = Math.max(chaosPair.quantity_traded, divPair.quantity_traded);
   const ratio = numerator / denominator;
 
-  return (
-    chaosPair.low_confidence || divPair.low_confidence || ratio < LOW_CONFIDENCE_RATIO_THRESHOLD
-  );
+  const isLowConfidenceRatio = ratio < LOW_CONFIDENCE_RATIO_THRESHOLD;
+
+  return chaosPair.low_confidence || divPair.low_confidence || isLowConfidenceRatio;
 }

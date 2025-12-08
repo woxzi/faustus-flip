@@ -24,28 +24,15 @@ export function ProfitTable({ tableData, ignoreLowConfidence }: ProfitTableProps
     payload: { sortBy?: keyof CurrencyTrio | null; reversed: boolean; search: string },
     ignoreLowConfidence: boolean
   ) {
-    console.log(
-      'calc',
-      'sortBy:',
-      payload.sortBy,
-      'reversed:',
-      payload.reversed,
-      'search:',
-      payload.search,
-      'ignoreLC',
-      ignoreLowConfidence
-    );
     const dataToSort = ignoreLowConfidence ? data.filter((x) => !x.low_confidence) : data;
     return sortData(dataToSort, payload);
   }
 
   const setSorting = (field: keyof CurrencyTrio) => {
-    console.log('called setSorting');
     const reversed = field === sortBy ? !reverseSortDirection : false;
     setReverseSortDirection(reversed);
     setSortBy(field);
 
-    console.log('setting data in state');
     setSortedData(
       calcSortedData(
         tableData,
