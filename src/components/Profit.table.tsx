@@ -8,8 +8,9 @@ import classes from './Profit.table.module.css';
 
 interface ProfitTableProps {
   tableData: CurrencyTrio[];
+  ignoreLowConfidence: boolean;
 }
-export function ProfitTable({ tableData }: ProfitTableProps) {
+export function ProfitTable({ tableData, ignoreLowConfidence }: ProfitTableProps) {
   const [scrolled, setScrolled] = useState(false);
   const theme = useMantineTheme();
 
@@ -18,21 +19,64 @@ export function ProfitTable({ tableData }: ProfitTableProps) {
   const [sortBy, setSortBy] = useState<keyof CurrencyTrio | null>('profit');
   const [reverseSortDirection, setReverseSortDirection] = useState(true);
 
+  function calcSortedData(
+    data: CurrencyTrio[],
+    payload: { sortBy?: keyof CurrencyTrio | null; reversed: boolean; search: string },
+    ignoreLowConfidence: boolean
+  ) {
+    console.log(
+      'calc',
+      'sortBy:',
+      payload.sortBy,
+      'reversed:',
+      payload.reversed,
+      'search:',
+      payload.search,
+      'ignoreLC',
+      ignoreLowConfidence
+    );
+    const dataToSort = ignoreLowConfidence ? data.filter((x) => !x.low_confidence) : data;
+    return sortData(dataToSort, payload);
+  }
+
   const setSorting = (field: keyof CurrencyTrio) => {
+    console.log('called setSorting');
     const reversed = field === sortBy ? !reverseSortDirection : false;
     setReverseSortDirection(reversed);
     setSortBy(field);
-    setSortedData(sortData(tableData, { sortBy: field, reversed, search }));
+
+    console.log('setting data in state');
+    setSortedData(
+      calcSortedData(
+        tableData,
+        { sortBy: field, reversed: reverseSortDirection, search },
+        ignoreLowConfidence
+      )
+    );
   };
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    setSortedData(sortData(tableData, { sortBy, reversed: reverseSortDirection, search: value }));
+    setSortedData(
+      calcSortedData(
+        tableData,
+        { sortBy, reversed: reverseSortDirection, search: value },
+        ignoreLowConfidence
+      )
+    );
   };
 
-  useMemo(() => {
-    setSortedData(sortData(tableData, { sortBy, reversed: reverseSortDirection, search }));
-  }, [tableData]);
+  const memoFunc = () => {
+    setSortedData(
+      calcSortedData(
+        tableData,
+        { sortBy, reversed: reverseSortDirection, search },
+        ignoreLowConfidence
+      )
+    );
+  };
+
+  useMemo(memoFunc, [tableData, ignoreLowConfidence]);
 
   const rows = sortedData.map((trio, index) => (
     <Table.Tr key={trio.currency_name} className={classes.trheader}>
@@ -50,15 +94,14 @@ export function ProfitTable({ tableData }: ProfitTableProps) {
       <Table.Td>{trio.chaos_value < trio.div_value ? 'Chaos → Div' : 'Div → Chaos'}</Table.Td>
       <Table.Td>{`${toFixedIfNecessary(trio.chaos_value, 2)}c`}</Table.Td>
       <Table.Td>{`${toFixedIfNecessary(trio.div_value, 2)}c`}</Table.Td>
-      <Table.Td>{toFixedIfNecessary(trio.chaos_volume_traded, 2).toLocaleString()}</Table.Td>
-      <Table.Td>{toFixedIfNecessary(trio.div_volume_traded, 2).toLocaleString()}</Table.Td>
+      <Table.Td>{toFixedIfNecessary(trio.chaos_value_volume_traded, 2).toLocaleString()}</Table.Td>
+      <Table.Td>{toFixedIfNecessary(trio.div_value_volume_traded, 2).toLocaleString()}</Table.Td>
     </Table.Tr>
   ));
 
   const submitSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     handleSearchChange((e.target as any).search.value);
-    console.log('searched', (e.target as any).search.value);
   };
 
   return (
@@ -106,15 +149,15 @@ export function ProfitTable({ tableData }: ProfitTableProps) {
                 Div Value
               </TableHeader>
               <TableHeader
-                sorted={sortBy === 'chaos_volume_traded'}
-                onSort={() => setSorting('chaos_volume_traded')}
+                sorted={sortBy === 'chaos_value_volume_traded'}
+                onSort={() => setSorting('chaos_value_volume_traded')}
                 reversed={reverseSortDirection}
               >
                 Chaos Volume Traded
               </TableHeader>
               <TableHeader
-                sorted={sortBy === 'div_volume_traded'}
-                onSort={() => setSorting('div_volume_traded')}
+                sorted={sortBy === 'chaos_value_volume_traded'}
+                onSort={() => setSorting('chaos_value_volume_traded')}
                 reversed={reverseSortDirection}
               >
                 Div Volume Traded

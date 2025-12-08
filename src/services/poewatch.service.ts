@@ -2,7 +2,9 @@
 // all prices are normalized to the first value in this array
 export const primaryCurrency = ['chaos', 'divine'];
 
-export const LOW_CONFIDENCE_THRESHOLD = 10000; // in chaos (or primaryCurrency[0])
+export const LOW_CONFIDENCE_VALUE_THRESHOLD = 10000; // in chaos (or primaryCurrency[0])
+export const LOW_CONFIDENCE_QUANTITY_THRESHOLD = 1000; // in secondary currency units
+export const LOW_CONFIDENCE_RATIO_THRESHOLD = 0.5; // in percent, ex: '0.5' = 50% threshold
 
 export function getCurrencyPairsAndTrios(league: string) {
   return fetch(`https://api.poe.watch/currencyRatios?league=${league}&game=poe1`)
@@ -34,10 +36,12 @@ export function getCurrencyProfitTrios(pairs: CurrencyPair[]) {
         currency_name: chaosPair.second_currency,
         chaos_value: chaosPair.primary_currency_value,
         div_value: divPair?.primary_currency_value,
-        chaos_volume_traded: chaosPair.chaos_value_traded,
-        div_volume_traded: divPair?.chaos_value_traded,
+        chaos_quantity_traded: chaosPair.quantity_traded,
+        chaos_value_volume_traded: chaosPair.chaos_value_traded,
+        div_quantity_traded: divPair.quantity_traded,
+        div_value_volume_traded: divPair?.chaos_value_traded,
         profit: Math.abs(chaosPair.primary_currency_value - divPair.primary_currency_value),
-        low_confidence: chaosPair.low_confidence || divPair.low_confidence,
+        low_confidence: isTrioLowConfidence(chaosPair, divPair),
       } as CurrencyTrio;
     })
     .filter((x) => !!x); // filter out pairs that weren't matched on both sides
@@ -78,7 +82,7 @@ function getCurrencyPair(pair: PoeWatchCurrencyPair, chaos_div_cost: number): Cu
       chaosValue = (ratio[0] * chaos_div_cost) / ratio[1];
     }
 
-    return {
+    const result: CurrencyPair = {
       first_currency: pair.first_currency,
       first_currency_ratio_amount: ratio[0],
       second_currency: pair.second_currency,
@@ -86,9 +90,11 @@ function getCurrencyPair(pair: PoeWatchCurrencyPair, chaos_div_cost: number): Cu
       primary_currency_value: chaosValue,
       quantity_traded: pair.quantity_traded,
       chaos_value_traded: pair.quantity_traded * chaosValue,
-      low_confidence:
-        pair.low_confidence || pair.quantity_traded * chaosValue < LOW_CONFIDENCE_THRESHOLD,
+      low_confidence: false,
     };
+    result.low_confidence = isPairLowConfidence(result);
+
+    return result;
   } else {
     // multiply value by div cost if needed so all values are normalized to chaos
     let chaosValue;
@@ -144,4 +150,23 @@ function getCurrencyPairRatio(pair: PoeWatchCurrencyPair) {
     }
     return Number(x);
   });
+}
+
+function isPairLowConfidence(pair: CurrencyPair): boolean {
+  return (
+    pair.low_confidence ||
+    pair.quantity_traded * pair.primary_currency_value < LOW_CONFIDENCE_VALUE_THRESHOLD ||
+    pair.quantity_traded < LOW_CONFIDENCE_QUANTITY_THRESHOLD
+  );
+}
+
+function isTrioLowConfidence(chaosPair: CurrencyPair, divPair: CurrencyPair): boolean {
+  const numerator = Math.min(chaosPair.primary_currency_value, divPair.primary_currency_value);
+  const denominator = Math.max(chaosPair.primary_currency_value, divPair.primary_currency_value);
+
+  const ratio = numerator / denominator;
+
+  return (
+    chaosPair.low_confidence || divPair.low_confidence || ratio < LOW_CONFIDENCE_RATIO_THRESHOLD
+  );
 }

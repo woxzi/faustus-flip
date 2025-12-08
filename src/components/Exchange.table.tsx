@@ -8,8 +8,9 @@ import classes from './Exchange.table.module.css';
 
 interface ExchangeTableProps {
   tableData: CurrencyPair[];
+  ignoreLowConfidence: boolean;
 }
-export function ExchangeTable({ tableData }: ExchangeTableProps) {
+export function ExchangeTable({ tableData, ignoreLowConfidence }: ExchangeTableProps) {
   const [scrolled, setScrolled] = useState(false);
   const theme = useMantineTheme();
 
@@ -18,21 +19,50 @@ export function ExchangeTable({ tableData }: ExchangeTableProps) {
   const [sortBy, setSortBy] = useState<keyof CurrencyPair | null>(null);
   const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
+  function calcSortedData(
+    data: CurrencyPair[],
+    payload: { sortBy?: keyof CurrencyPair | null; reversed: boolean; search: string },
+    ignoreLowConfidence: boolean
+  ) {
+    console.log('called calc');
+    const dataToSort = ignoreLowConfidence ? data.filter((x) => !x.low_confidence) : data;
+    return sortData(dataToSort, payload);
+  }
+
   const setSorting = (field: keyof CurrencyPair) => {
     const reversed = field === sortBy ? !reverseSortDirection : false;
     setReverseSortDirection(reversed);
     setSortBy(field);
-    setSortedData(sortData(tableData, { sortBy: field, reversed, search }));
+    setSortedData(
+      calcSortedData(
+        tableData,
+        { sortBy: field, reversed: reverseSortDirection, search },
+        ignoreLowConfidence
+      )
+    );
   };
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    setSortedData(sortData(tableData, { sortBy, reversed: reverseSortDirection, search: value }));
+    setSortedData(
+      calcSortedData(
+        tableData,
+        { sortBy, reversed: reverseSortDirection, search: value },
+        ignoreLowConfidence
+      )
+    );
   };
 
-  useMemo(() => {
-    setSortedData(sortData(tableData, { sortBy, reversed: reverseSortDirection, search }));
-  }, [tableData]);
+  const memoFunc = () => {
+    setSortedData(
+      calcSortedData(
+        tableData,
+        { sortBy, reversed: reverseSortDirection, search },
+        ignoreLowConfidence
+      )
+    );
+  };
+  useMemo(memoFunc, [tableData, ignoreLowConfidence]);
 
   const rows = sortedData.map((pair, index) => (
     <Table.Tr
@@ -64,7 +94,6 @@ export function ExchangeTable({ tableData }: ExchangeTableProps) {
   const submitSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     handleSearchChange((e.target as any).search.value);
-    console.log('searched', (e.target as any).search.value);
   };
 
   return (

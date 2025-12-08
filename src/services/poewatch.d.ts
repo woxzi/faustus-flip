@@ -29,8 +29,10 @@ interface CurrencyTrio {
   currency_name: string;
   chaos_value: number;
   div_value: number;
-  chaos_volume_traded: number;
-  div_volume_traded: number;
+  chaos_quantity_traded: number;
+  chaos_value_volume_traded: number;
+  div_quantity_traded: number;
+  div_value_volume_traded: number;
   profit: number;
   low_confidence: boolean;
 }
