@@ -1,7 +1,15 @@
 import { useMemo, useState } from 'react';
-import { IconInfoCircle, IconSearch } from '@tabler/icons-react';
+import { IconCopy, IconInfoCircle, IconSearch } from '@tabler/icons-react';
 import cx from 'clsx';
-import { Center, ScrollArea, Table, TextInput, Tooltip, useMantineTheme } from '@mantine/core';
+import {
+  ActionIcon,
+  Center,
+  ScrollArea,
+  Table,
+  TextInput,
+  Tooltip,
+  useMantineTheme,
+} from '@mantine/core';
 import { sortData, toFixedIfNecessary, toTitleCase } from '@/helpers';
 import { TableHeader } from './TableBase';
 import classes from './Profit.table.module.css';
@@ -76,7 +84,18 @@ export function ProfitTable({ tableData, ignoreLowConfidence }: ProfitTableProps
           </Center>
         )}
       </Table.Td>
-      <Table.Td>{toTitleCase(trio.currency_name)}</Table.Td>
+      <Table.Td style={{ justifyContent: 'start' }}>
+        <ActionIcon
+          color="gray"
+          variant="transparent"
+          onClick={() => {
+            navigator.clipboard.writeText(trio.currency_name.replace('-', ' '));
+          }}
+        >
+          <IconCopy size={'.8rem'} className={classes.icon} />
+        </ActionIcon>
+        {toTitleCase(trio.currency_name)}
+      </Table.Td>
       <Table.Td>{`${toFixedIfNecessary(trio.profit, 2)}c`}</Table.Td>
       <Table.Td>{trio.chaos_value < trio.div_value ? 'Chaos → Div' : 'Div → Chaos'}</Table.Td>
       <Table.Td>{`${toFixedIfNecessary(trio.chaos_value, 2)}c`}</Table.Td>
